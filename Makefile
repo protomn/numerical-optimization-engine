@@ -1,6 +1,6 @@
 CXX      := g++
 CXXFLAGS := -std=c++17 -Wall -Wextra -O2
-INCLUDES := -I./include -I/opt/homebrew/include/eigen3
+INCLUDES := -I./include -I/opt/homebrew/include/eigen3 -I./vendor
 
 SRC_DIR      := src
 BENCH_DIR    := benchmarks
