@@ -1,7 +1,7 @@
 #pragma once
 #include <Eigen/Dense>
 #include <stdexcept>
-#include "objective.hpp"
+#include "core/objective.hpp"
 
 class Sphere : public ObjectiveFunction
 {
