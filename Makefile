@@ -38,7 +38,7 @@ EXAMPLE_BINS := $(patsubst $(EXAMPLES_DIR)/%.cpp, $(BIN_DIR)/%, $(EXAMPLE_SRCS))
 
 .PHONY: all src benchmarks tests prelim-tests examples clean help
 
-all: benchmarks tests prelim-tests examples
+all: src tests prelim-tests examples
 
 src: $(SRC_OBJS)
 
