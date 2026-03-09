@@ -8,7 +8,7 @@ class ObjectiveFunction
         virtual ~ObjectiveFunction() = default;
 
         virtual double evaluate(const Eigen::VectorXd &x) const = 0;
-        virtual Eigen::VectorXd grad(const Eigen::VectorXd &x) const;
-        virtual Eigen::MatrixXd hessian(const Eigen::VectorXd &x) const;
+        virtual Eigen::VectorXd grad(const Eigen::VectorXd &x) const = 0;
+        virtual Eigen::MatrixXd hessian(const Eigen::VectorXd &x) const = 0;
         virtual int dim() const = 0;
 };
