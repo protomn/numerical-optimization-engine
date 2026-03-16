@@ -49,5 +49,5 @@ class Rosenbrock : public ObjectiveFunction
 
     private:
         
-        int n_;
+        [[maybe_unused]]int n_;
 };
