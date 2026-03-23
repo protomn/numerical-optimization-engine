@@ -1,6 +1,6 @@
 CXX      := g++
 CXXFLAGS := -std=c++17 -Wall -Wextra -O2
-INCLUDES := -I./include -I/opt/homebrew/include/eigen3 -I./vendor
+INCLUDES := -I./include -I/opt/homebrew/include/eigen3 -I./vendor -I/opt/homebrew/lib/python3.14/site-packages/pybind11/include -I/opt/homebrew/opt/python@3.14/Frameworks/Python.framework/Versions/3.14/include/python3.14
 
 SRC_DIR      := src
 BENCH_DIR    := benchmarks
@@ -16,6 +16,7 @@ BUILD_BENCH    := $(BUILD_DIR)/benchmarks
 BUILD_TEST     := $(BUILD_DIR)/tests
 BUILD_PRELIM   := $(BUILD_DIR)/tests/prelim-tests
 BUILD_EXAMPLES := $(BUILD_DIR)/examples
+PYTHON_EXT := optim_engine$(shell python3-config --extension-suffix)
 
 SRC_SRCS     := $(shell find $(SRC_DIR) -name "*.cpp" 2>/dev/null)
 BENCH_SRCS   := $(wildcard $(BENCH_DIR)/*.cpp)
@@ -83,6 +84,13 @@ $(BUILD_EXAMPLES)/%.o: $(EXAMPLES_DIR)/%.cpp | $(BUILD_EXAMPLES)
 
 $(BIN_DIR) $(BUILD_BENCH) $(BUILD_TEST) $(BUILD_PRELIM) $(BUILD_EXAMPLES):
 	@mkdir -p $@
+
+
+python: $(PYTHON_EXT)
+
+$(PYTHON_EXT): python/bindings.cpp $(SRC_OBJS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) \
+		-shared -fPIC -undefined dynamic_lookup $^ -o $@
 
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
