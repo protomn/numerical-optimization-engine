@@ -101,3 +101,8 @@ cmake-build-*/
 *.swo
 *~
 \#*\#
+
+# pybind11 compiled extension
+*.cpython-*.so
+
+docs/images/
