@@ -6,10 +6,13 @@
 
 struct GDConfig
 {
-    double learning_rate{0.01};
+    double learning_rate{0.01}; // to be used as initial alpha is backtracking is disabled
     double tol{1e-6};
     int max_epochs{10000};
     bool history{false};
+    bool backtracking{true};
+    double c1{1e-4}; // Armijo constant
+    double rho{0.5}; // Shrinkage factor
 };
 
 class GradientDescent : public Optimizer

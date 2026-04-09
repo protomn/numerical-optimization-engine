@@ -25,7 +25,30 @@ OptimResult GradientDescent::optimize(ObjectiveFunction &f,
             break;
         }
 
-        x = x - config_.learning_rate * grad_;
+        double alpha{1.0};
+
+        if(config_.backtracking)
+        {
+            double f_x = f.evaluate(x);
+            double grad_sq = grad_.squaredNorm();
+            
+            while(f.evaluate(x - alpha * grad_) > f_x - config_.c1 * alpha * grad_sq)
+            {
+                alpha *= config_.rho;
+
+                if(alpha < 1e-10)
+                {
+                    break;
+                }
+            }
+        }
+
+        else
+        {
+            alpha = config_.learning_rate;
+        }
+        
+        x = x - alpha * grad_;
 
         if(config_.history)
         {
