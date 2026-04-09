@@ -9,6 +9,7 @@ struct HCConfig
     int max_epochs = 1000;
     double step_size = 0.01;
     double tol = 1e-6;
+    int stagnation_limit = 100;
     bool history = false;
 };
 
