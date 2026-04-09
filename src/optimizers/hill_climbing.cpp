@@ -33,22 +33,21 @@ OptimResult HC::optimize(ObjectiveFunction &f,
         
         cand = x + pertubation_vect;
 
-        auto f_curr = f.evaluate(x);
         auto f_cand = f.evaluate(cand);
 
-        if(f_cand < f_curr)
+        if(f_cand < f_prev)
         {
+            double improvement = std::abs(f_prev - f_cand);
             x = cand;
-            f_curr = f_cand;
+            f_prev = f_cand;
             stagnation_count = 0;
 
-            if(std::abs(f_prev - f_curr) < config_.tol)
+            if(improvement < config_.tol)
             {
                 result.status = Status::CONVERGED;
+                result.message = std::string("Converged.");
                 break;
             }
-
-            f_prev = f_curr;
         }
 
         else
