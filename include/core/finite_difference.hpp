@@ -21,9 +21,6 @@ class FiniteDiffWrapper : public ObjectiveFunction
 
             Eigen::VectorXd grad_(dim);
 
-            
-            double f_x = f_.evaluate(x);
-
             for(int i{}; i < dim; ++i)
             {
                 Eigen::VectorXd x_plus = x;
