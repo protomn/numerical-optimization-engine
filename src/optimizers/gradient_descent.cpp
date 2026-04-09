@@ -9,7 +9,7 @@ OptimResult GradientDescent::optimize(ObjectiveFunction &f,
                           const Eigen::VectorXd &x_0)
 {
     OptimResult result;
-    result.status = Status::FAILED;
+    result.status = Status::MAX_EPOCHS;
     result.iterations = 0;
     Eigen::VectorXd x{x_0};
     Eigen::VectorXd grad_;
@@ -38,9 +38,8 @@ OptimResult GradientDescent::optimize(ObjectiveFunction &f,
     result.optimal_x = x;
     result.optimal_f = f.evaluate(x);
 
-    if(result.status == Status::FAILED)
+    if(result.status == Status::MAX_EPOCHS)
     {
-        result.status = Status::MAX_EPOCHS;
         result.message = std::string("Stopped. Epochs exhausted.");
     }
 
