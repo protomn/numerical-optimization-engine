@@ -20,7 +20,7 @@ TEST_CASE("Hill Climbing on Sphere", "[hill_climbing]")
         test_x << 5.0, 5.0;
         OptimResult test_result = test_hc.optimize(test_sphere, test_x);
 
-        CHECK(test_result.converged == true);
+        CHECK(test_result.status == Status::CONVERGED);
         CHECK(test_result.optimal_f < 1e-6);
         CHECK(test_result.optimal_x.norm() < 1e-3);
     }
@@ -35,7 +35,8 @@ TEST_CASE("Hill Climbing on Sphere", "[hill_climbing]")
         test_x << 1.0, -1.0;
         OptimResult test_result = test_hc.optimize(test_rosenbrock, test_x);
 
-        CHECK(test_result.converged == false);
+        CHECK(test_result.status == Status::MAX_EPOCHS ||
+              test_result.status == Status::STAGNATED);
         CHECK(test_result.iterations == 10000);
     }
 }

@@ -20,7 +20,7 @@ TEST_CASE("Simulated Annealing on Sphere", "[simulated_annealing]")
         test_x0 << 5.0, 5.0;
         OptimResult test_result = test_sa.optimize(test_sphere, test_x0);
 
-        CHECK(test_result.converged == true);
+        CHECK(test_result.status == Status::CONVERGED);
         CHECK(test_result.optimal_f < 1e-3);
         CHECK(test_result.optimal_x.norm() < 1e-1);
     }
@@ -35,7 +35,7 @@ TEST_CASE("Simulated Annealing on Sphere", "[simulated_annealing]")
         test_x0 << 1.0, -1.0;
         OptimResult test_result = test_sa.optimize(test_rosenbrock, test_x0);
 
-        CHECK(test_result.converged == false);
+        CHECK(test_result.status == Status::MAX_EPOCHS);
         CHECK(test_result.iterations == 1000);
     }
 }
