@@ -24,20 +24,54 @@ OptimResult Newton::optimize(ObjectiveFunction &f,
             break;
         }
 
+        double mu{config_.initial_mu};
+        Eigen::MatrixXd hess_mod;
+        Eigen::LLT<Eigen::MatrixXd> llt;
         hess = f.hessian(x);
+        bool proceed{true};
 
-        auto ldlt = hess.ldlt();
-
-        if(ldlt.info() != Eigen::Success)
+        while(proceed)
         {
-            result.status = Status::FAILED;
-            result.message = std::string("Hessian decomposition failed.");
+            hess_mod = hess + mu * Eigen::MatrixXd::Identity(hess.rows(), hess.cols());
+            llt = hess_mod.llt();
+
+            if(llt.info() == Eigen::Success)
+            {
+                break;
+            }
+
+            mu *= 2.0;
+
+            if(mu >= 1e10)
+            {
+                result.status = Status::FAILED;
+                result.message = std::string("Hessian modification failed.");
+                proceed = false;
+            }
+        }
+
+        if(!proceed)
+        {
             break;
         }
 
-        Eigen::VectorXd d = ldlt.solve(grad_);
+        Eigen::VectorXd d = llt.solve(grad_);
 
-        x = x - d;
+        double alpha{1.0};
+        double f_x = f.evaluate(x);
+        double grad_sq = grad_.squaredNorm();
+
+        while(f.evaluate(x - alpha * d) > f_x - config_.c1 * alpha * grad_sq)
+        {
+            alpha *= config_.rho;
+            
+            if(alpha < 1e-10)
+            {
+                break;
+            }
+        }
+
+        x = x - alpha * d;
 
         if(config_.history)
         {
