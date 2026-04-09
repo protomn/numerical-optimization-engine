@@ -32,7 +32,9 @@ void run_benchmark(const std::string &name,
               << std::setw(12) << std::fixed << std::setprecision(3) << avg_ms
               << std::setw(10) << result.iterations
               << std::setw(12) << std::scientific << std::setprecision(2) << result.optimal_f
-              << std::setw(12) << (result.converged ? std::string("CONVERGED") : std::string("STOPPED"))
+              << std::setw(12) << (result.status == Status::CONVERGED ? "CONVERGED" :
+                                   result.status == Status::STAGNATED ? "STAGNATED" :
+                                   result.status == Status::FAILED ? "FAILED" : "MAX_EPOCHS");
               << '\n';
 }
 
