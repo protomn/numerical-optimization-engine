@@ -8,6 +8,7 @@
 // Function headers
 #include <functions/rosenbrock.hpp>
 #include <functions/sphere.hpp>
+#include <functions/rastrigin.hpp>
 
 // Optimizer headers
 #include <optimizers/gradient_descent.hpp>
