@@ -87,6 +87,15 @@ PYBIND11_MODULE(optim_engine, m)
         .def("hessian", &ObjectiveFunction::hessian)
         .def("dim", &ObjectiveFunction::dim);
 
+    // Exposing status enum
+
+    py::enum_<Status>(m, "Status")
+        .value("CONVERGED", Status::CONVERGED)
+        .value("STAGNATED", Status::STAGNATED)
+        .value("MAX_EPOCHS", Status::MAX_EPOCHS)
+        .value("FAILED", status::FAILED)
+        .export_values();
+
     // Exposing the OptimResult struct
 
     py::class_<OptimResult>(m, "OptimResult")
@@ -94,7 +103,7 @@ PYBIND11_MODULE(optim_engine, m)
         .def_readonly("optimal_x", &OptimResult::optimal_x)
         .def_readonly("optimal_f", &OptimResult::optimal_f)
         .def_readonly("iterations", &OptimResult::iterations)
-        .def_readonly("converged", &OptimResult::converged)
+        .def_readonly("status", &OptimResult::status)
         .def_readonly("message", &OptimResult::message)
         .def_readonly("history", &OptimResult::history);
         
