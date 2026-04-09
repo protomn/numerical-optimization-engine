@@ -15,12 +15,16 @@ OptimResult SA::optimize(ObjectiveFunction &f,
 
     std::random_device rd;
     std::mt19937 gen(rd());
+    std::normal_distribution<double> dist_1(0.0, config_.step_size);
     std::uniform_real_distribution<double> dist_2(0.0, 1.0);
+
+    double f_x = f.evaluate(x);
+    Eigen::VectorXd best_x = x;
+    double best_f{f_x};
 
     for(int i{}; i < config_.max_epochs; ++i)
     {
         //double current_step = config_.step_size * (T / config_.initial_temp);
-        std::normal_distribution<double> dist_1(0.0, config_.step_size);
 
         if(T < config_.min_temp)
         {
@@ -39,7 +43,6 @@ OptimResult SA::optimize(ObjectiveFunction &f,
         Eigen::VectorXd cand = x + pertubation_vect;
 
         auto f_cand = f.evaluate(cand);
-        auto f_x = f.evaluate(x);
         auto delta_f = f_cand - f_x;
 
         double p{};
@@ -48,6 +51,12 @@ OptimResult SA::optimize(ObjectiveFunction &f,
         {
             x = cand;
             f_x = f_cand;
+
+            if(f_x < best_f)
+            {
+                best_f = f_x;
+                best_x = x;
+            }
         }
 
         else
@@ -58,6 +67,12 @@ OptimResult SA::optimize(ObjectiveFunction &f,
             {
                 x = cand;
                 f_x = f_cand;
+
+                if(f_x < best_f)
+                {
+                    best_f = f_x;
+                    best_x = x;
+                }
             }
         }
 
@@ -71,8 +86,8 @@ OptimResult SA::optimize(ObjectiveFunction &f,
         result.iterations += 1;
     }
 
-    result.optimal_x = x;
-    result.optimal_f = f.evaluate(x);
+    result.optimal_x = best_x;
+    result.optimal_f = best_f;
 
     if(!result.converged)
     {
