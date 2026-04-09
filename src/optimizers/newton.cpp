@@ -7,7 +7,7 @@ OptimResult Newton::optimize(ObjectiveFunction &f,
                              const Eigen::VectorXd &x_0)
 {
     OptimResult result;
-    result.converged = false;
+    result.status = Status::FAILED;
     result.iterations = 0;
     Eigen::VectorXd x{x_0};
     Eigen::VectorXd grad_;
@@ -19,7 +19,7 @@ OptimResult Newton::optimize(ObjectiveFunction &f,
 
         if(grad_.norm() < config_.tol)
         {
-            result.converged = true;
+            result.status = Status::CONVERGED;
             result.message = std::string("Converged.");
             break;
         }
@@ -49,8 +49,9 @@ OptimResult Newton::optimize(ObjectiveFunction &f,
     result.optimal_x = x;
     result.optimal_f = f.evaluate(x);
 
-    if(!result.converged)
+    if(result.status == Status::FAILED)
     {
+        result.status = Status::MAX_EPOCHS;
         result.message = std::string("Stopped. Epochs exhausted.");
     }
 

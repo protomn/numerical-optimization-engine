@@ -8,7 +8,7 @@ OptimResult SA::optimize(ObjectiveFunction &f,
                          const Eigen::VectorXd &x_0)
 {
     OptimResult result;
-    result.converged = false;
+    result.status = Status::FAILED;
     result.iterations = 0;
     Eigen::VectorXd x{x_0};
     double T = config_.initial_temp;
@@ -28,7 +28,7 @@ OptimResult SA::optimize(ObjectiveFunction &f,
 
         if(T < config_.min_temp)
         {
-            result.converged = true;
+            result.status = Status::CONVERGED;
             result.message = std::string("Converged.");
             break;
         }
@@ -89,8 +89,9 @@ OptimResult SA::optimize(ObjectiveFunction &f,
     result.optimal_x = best_x;
     result.optimal_f = best_f;
 
-    if(!result.converged)
+    if(result.status == Status::FAILED)
     {
+        result.status = Status::MAX_EPOCHS;
         result.message = std::string("Stopped. Epochs exhausted.");
     }
 
