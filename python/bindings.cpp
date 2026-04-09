@@ -87,6 +87,14 @@ PYBIND11_MODULE(optim_engine, m)
         .def("hessian", &ObjectiveFunction::hessian)
         .def("dim", &ObjectiveFunction::dim);
 
+    py::class_<FiniteDiffWrapper, ObjectiveFunction>(m, "FiniteDiffWrapper")
+        .def(py::init<ObjectiveFunction &, double>(),
+             py::arg("f"), py::arg("h") = 1e-5)
+        .def("evaluate", &FiniteDiffWrapper::evaluate)
+        .def("grad", &FiniteDiffWrapper::grad)
+        .def("hessian", &FiniteDiffWrapper::hessian)
+        .def("dim", &FiniteDiffWrapper::dim);
+
     // Exposing status enum
 
     py::enum_<Status>(m, "Status")
