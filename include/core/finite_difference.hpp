@@ -15,13 +15,13 @@ class FiniteDiffWrapper : public ObjectiveFunction
             return f_.evaluate(x);
         }
 
-        Eigen::VectorXd grad(Eigen::VectorXd &x) const override
+        Eigen::VectorXd grad(const Eigen::VectorXd &x) const override
         {
-            size_t dim{x.size()};
+            size_t dim = x.size();
 
             Eigen::VectorXd grad_(dim);
 
-            for(int i{}; i < dim; ++i)
+            for(size_t i{}; i < dim; ++i)
             {
                 Eigen::VectorXd x_plus = x;
                 Eigen::VectorXd x_minus = x;
@@ -40,14 +40,14 @@ class FiniteDiffWrapper : public ObjectiveFunction
 
         Eigen::MatrixXd hessian(const Eigen::VectorXd &x) const override
         {
-            size_t dim{x.size()};
+            size_t dim = x.size();
             Eigen::MatrixXd hess(dim, dim);
 
             double f_x = f_.evaluate(x);
 
-            for(int i{}; i < dim; ++i)
+            for(size_t i{}; i < dim; ++i)
             {
-                for(int j{i}; j < dim; ++j)
+                for(size_t j{i}; j < dim; ++j)
                 {
                     if(i == j)
                     {
