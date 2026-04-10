@@ -35,8 +35,8 @@ TEST_CASE("Hill Climbing on Sphere", "[hill_climbing]")
         test_x << 1.0, -1.0;
         OptimResult test_result = test_hc.optimize(test_rosenbrock, test_x);
 
-        CHECK(test_result.status == Status::MAX_EPOCHS ||
-              test_result.status == Status::STAGNATED);
+        CHECK((test_result.status == Status::MAX_EPOCHS ||
+               test_result.status == Status::STAGNATED));
         CHECK(test_result.iterations == 10000);
     }
 }
