@@ -89,7 +89,13 @@ PYBIND11_MODULE(optim_engine, m)
 
     py::class_<FiniteDiffWrapper, ObjectiveFunction>(m, "FiniteDiffWrapper")
         .def(py::init<ObjectiveFunction &, double>(),
-             py::arg("f"), py::arg("h") = 1e-5)
+             py::arg("f"), py::arg("h") = 1e-5,
+             py::keep_alive<1, 2>())
+             /*
+             Wrapper holds a raw reference
+             If python garbage collects f while fdw object is still alive
+             can cause seg fault.
+             */
         .def("evaluate", &FiniteDiffWrapper::evaluate)
         .def("grad", &FiniteDiffWrapper::grad)
         .def("hessian", &FiniteDiffWrapper::hessian)
@@ -101,7 +107,7 @@ PYBIND11_MODULE(optim_engine, m)
         .value("CONVERGED", Status::CONVERGED)
         .value("STAGNATED", Status::STAGNATED)
         .value("MAX_EPOCHS", Status::MAX_EPOCHS)
-        .value("FAILED", status::FAILED)
+        .value("FAILED", Status::FAILED)
         .export_values();
 
     // Exposing the OptimResult struct
@@ -126,19 +132,26 @@ PYBIND11_MODULE(optim_engine, m)
         .def_readwrite("learning_rate", &GDConfig::learning_rate)
         .def_readwrite("max_epochs", &GDConfig::max_epochs)
         .def_readwrite("tol", &GDConfig::tol)
-        .def_readwrite("history", &GDConfig::history);
+        .def_readwrite("history", &GDConfig::history)
+        .def_readwrite("backtracking", &GDConfig::backtracking)
+        .def_readwrite("c1", &GDConfig::c1)
+        .def_readwrite("rho", &GDConfig::rho);
 
     py::class_<NewtonConfig>(m, "NewtonConfig")
         .def(py::init<>())
         .def_readwrite("tol", &NewtonConfig::tol)
         .def_readwrite("max_epochs", &NewtonConfig::max_epochs)
-        .def_readwrite("history", &NewtonConfig::history);
+        .def_readwrite("history", &NewtonConfig::history)
+        .def_readwrite("c1", &NewtonConfig::c1)
+        .def_readwrite("rho", &NewtonConfig::rho)
+        .def_readwrite("initial_mu", &NewtonConfig::initial_mu);
 
     py::class_<HCConfig>(m, "HCConfig")
         .def(py::init<>())
         .def_readwrite("max_epochs", &HCConfig::max_epochs)
         .def_readwrite("step_size", &HCConfig::step_size)
         .def_readwrite("tol", &HCConfig::tol)
+        .def_readwrite("stagnation_limit", &HCConfig::stagnation_limit)
         .def_readwrite("history", &HCConfig::history);
 
     py::class_<SAConfig>(m, "SAConfig")
@@ -180,4 +193,11 @@ PYBIND11_MODULE(optim_engine, m)
         .def("grad", &Rosenbrock::grad)
         .def("hessian", &Rosenbrock::hessian)
         .def("dim", &Rosenbrock::dim);
+
+    py::class_<Rastrigin, ObjectiveFunction>(m, "Rastrigin")
+        .def(py::init<int>())
+        .def("evaluate", &Rastrigin::evaluate)
+        .def("grad", &Rastrigin::grad)
+        .def("hessian", &Rastrigin::hessian)
+        .def("dim", &Rastrigin::dim);
 }
