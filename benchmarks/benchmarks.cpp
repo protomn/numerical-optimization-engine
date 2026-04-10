@@ -34,7 +34,7 @@ void run_benchmark(const std::string &name,
               << std::setw(12) << std::scientific << std::setprecision(2) << result.optimal_f
               << std::setw(12) << (result.status == Status::CONVERGED ? "CONVERGED" :
                                    result.status == Status::STAGNATED ? "STAGNATED" :
-                                   result.status == Status::FAILED ? "FAILED" : "MAX_EPOCHS");
+                                   result.status == Status::FAILED ? "FAILED" : "MAX_EPOCHS")
               << '\n';
 }
 
