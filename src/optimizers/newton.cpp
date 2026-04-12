@@ -1,7 +1,8 @@
 #include <string>
 #include <Eigen/Dense>
 #include <vector>
-#include <optimizers/newton.hpp>
+#include "optimizers/newton.hpp"
+#include "core/line_search.hpp"
 
 OptimResult Newton::optimize(ObjectiveFunction &f,
                              const Eigen::VectorXd &x_0)
@@ -58,17 +59,13 @@ OptimResult Newton::optimize(ObjectiveFunction &f,
         Eigen::VectorXd d = llt.solve(grad_);
 
         double alpha{1.0};
-        double f_x = f.evaluate(x);
-        double grad_sq = grad_.squaredNorm();
 
-        while(f.evaluate(x - alpha * d) > f_x - config_.c1 * alpha * grad_sq)
+        if(config_.backtracking)
         {
-            alpha *= config_.rho;
-            
-            if(alpha < 1e-10)
-            {
-                break;
-            }
+            WolfeConfig wc;
+            wc.c1 = config_.c1;
+            wc.c2 = config_.c2;
+            alpha = lineSearch(f, x, -d, grad_, wc);
         }
 
         x = x - alpha * d;
