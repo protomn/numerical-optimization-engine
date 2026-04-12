@@ -5,6 +5,7 @@
 #include <core/optimizer.hpp>
 #include <core/result.hpp>
 #include <core/finite_difference.hpp>
+#include <core/line_search.hpp>
 
 // Function headers
 #include <functions/rosenbrock.hpp>
