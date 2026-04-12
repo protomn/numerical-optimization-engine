@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include "optimizers/gradient_descent.hpp"
+#include "core/line_search.hpp"
 
 OptimResult GradientDescent::optimize(ObjectiveFunction &f,
                           const Eigen::VectorXd &x_0)
@@ -29,18 +30,10 @@ OptimResult GradientDescent::optimize(ObjectiveFunction &f,
 
         if(config_.backtracking)
         {
-            double f_x = f.evaluate(x);
-            double grad_sq = grad_.squaredNorm();
-            
-            while(f.evaluate(x - alpha * grad_) > f_x - config_.c1 * alpha * grad_sq)
-            {
-                alpha *= config_.rho;
-
-                if(alpha < 1e-10)
-                {
-                    break;
-                }
-            }
+            WolfeConfig wc;
+            wc.c1 = config_.c1;
+            wc.c2 = config_.c2;
+            alpha = lineSearch(f, x, -grad_, grad_, wc);
         }
 
         else
