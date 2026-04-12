@@ -32,6 +32,8 @@ BENCH_BIN    := $(BIN_DIR)/benchmarks
 PRELIM_BINS  := $(patsubst $(PRELIM_DIR)/%.cpp, $(BIN_DIR)/prelim-tests/%, $(PRELIM_SRCS))
 EXAMPLE_BINS := $(patsubst $(EXAMPLES_DIR)/%.cpp, $(BIN_DIR)/%, $(EXAMPLE_SRCS))
 
+.PRECIOUS: $(BUILD_PRELIM)/%.o $(BUILD_BENCH)/%.o $(BUILD_EXAMPLES)/%.o
+
 .PHONY: all src benchmarks prelim-tests run-tests examples python clean help
 
 all: src benchmarks prelim-tests examples python
