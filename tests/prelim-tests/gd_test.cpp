@@ -25,8 +25,10 @@ TEST_CASE("GD on Sphere", "[gradient_descent]")
 
     SECTION("Fails.")
     {
-        test_config.learning_rate = 10;
-        test_config.max_epochs = 100;
+        test_config.learning_rate = 0.01;
+        test_config.max_epochs = 5;
+        test_config.tol = 1e-20;
+        test_config.backtracking = false;
         GradientDescent test_gd(test_config);
 
         Eigen::VectorXd test_x0(2);
@@ -34,6 +36,6 @@ TEST_CASE("GD on Sphere", "[gradient_descent]")
         OptimResult test_result = test_gd.optimize(test_sphere, test_x0);
 
         CHECK(test_result.status == Status::MAX_EPOCHS);
-        CHECK(test_result.iterations == 100);
+        CHECK(test_result.iterations == 5);
     }
 }
