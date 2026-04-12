@@ -10,8 +10,10 @@ struct NewtonConfig
     int max_epochs{1000};
     bool history{false};
     double c1{1e-4}; // Armijo constant
+    double c2{0.9};
     double rho{0.5}; // shrinkage factor
     double initial_mu{1e-4}; // initial diagonal shift
+    bool backtracking{true};
 };
 
 class Newton : public Optimizer
