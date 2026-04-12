@@ -144,7 +144,6 @@ PYBIND11_MODULE(optim_engine, m)
         .def_readwrite("history", &NewtonConfig::history)
         .def_readwrite("c1", &NewtonConfig::c1)
         .def_readwrite("c2", &NewtonConfig::c2)
-        .def_readwrite("rho", &NewtonConfig::rho)
         .def_readwrite("initial_mu", &NewtonConfig::initial_mu)
         .def_readwrite("backtracking", &NewtonConfig::backtracking);
 
@@ -165,6 +164,13 @@ PYBIND11_MODULE(optim_engine, m)
         .def_readwrite("max_epochs", &SAConfig::max_epochs)
         .def_readwrite("tol", &SAConfig::tol)
         .def_readwrite("history", &SAConfig::history);
+
+    py::class_<WolfeConfig>(m, "WolfeConfig")
+        .def(py::init<>())
+        .def_readwrite("c1", &WolfeConfig::c1)
+        .def_readwrite("c2", &WolfeConfig::c2)
+        .def_readwrite("alpha_max", &WolfeConfig::alpha_max)
+        .def_readwrite("max_epochs", &WolfeConfig::max_epochs);
 
     py::class_<GradientDescent, Optimizer>(m, "GradientDescent")
         .def(py::init<GDConfig>())
@@ -202,4 +208,12 @@ PYBIND11_MODULE(optim_engine, m)
         .def("grad", &Rastrigin::grad)
         .def("hessian", &Rastrigin::hessian)
         .def("dim", &Rastrigin::dim);
+
+    m.def("lineSearch", &lineSearch,
+          py::arg("f"),
+          py::arg("x"),
+          py::arg("d"),
+          py::arg("grad"),
+          py::arg("config") = WolfeConfig(),
+          "Performs line search to satisfy Wolfe criterion.");
 }
