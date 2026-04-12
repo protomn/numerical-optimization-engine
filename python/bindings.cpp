@@ -135,7 +135,7 @@ PYBIND11_MODULE(optim_engine, m)
         .def_readwrite("history", &GDConfig::history)
         .def_readwrite("backtracking", &GDConfig::backtracking)
         .def_readwrite("c1", &GDConfig::c1)
-        .def_readwrite("rho", &GDConfig::rho);
+        .def_readwrite("c2", &GDConfig::c2);
 
     py::class_<NewtonConfig>(m, "NewtonConfig")
         .def(py::init<>())
@@ -143,8 +143,10 @@ PYBIND11_MODULE(optim_engine, m)
         .def_readwrite("max_epochs", &NewtonConfig::max_epochs)
         .def_readwrite("history", &NewtonConfig::history)
         .def_readwrite("c1", &NewtonConfig::c1)
+        .def_readwrite("c2", &NewtonConfig::c2)
         .def_readwrite("rho", &NewtonConfig::rho)
-        .def_readwrite("initial_mu", &NewtonConfig::initial_mu);
+        .def_readwrite("initial_mu", &NewtonConfig::initial_mu)
+        .def_readwrite("backtracking", &NewtonConfig::backtracking);
 
     py::class_<HCConfig>(m, "HCConfig")
         .def(py::init<>())
