@@ -11,8 +11,8 @@ struct GDConfig
     int max_epochs{10000};
     bool history{false};
     bool backtracking{true};
-    double c1{1e-4}; // Armijo constant
-    double rho{0.5}; // Shrinkage factor
+    double c1{1e-4};
+    double c2{0.9}; 
 };
 
 class GradientDescent : public Optimizer
