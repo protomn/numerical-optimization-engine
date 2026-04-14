@@ -165,6 +165,15 @@ PYBIND11_MODULE(optim_engine, m)
         .def_readwrite("tol", &SAConfig::tol)
         .def_readwrite("history", &SAConfig::history);
 
+    py::class_<LBFGSConfig>(m, "LBFGSConfig")
+        .def(py::init<>())
+        .def_readwrite("m", &LBFGSConfig::m)
+        .def_readwrite("tol", &LBFGSConfig::tol)
+        .def_readwrite("max_epochs", &LBFGSConfig::max_epochs)
+        .def_readwrite("history", &LBFGSConfig::history)
+        .def_readwrite("c1", &LBFGSConfig::c1)
+        .def_readwrite("c2", &LBFGSConfig::c2);
+
     py::class_<WolfeConfig>(m, "WolfeConfig")
         .def(py::init<>())
         .def_readwrite("c1", &WolfeConfig::c1)
@@ -187,6 +196,10 @@ PYBIND11_MODULE(optim_engine, m)
     py::class_<SA, Optimizer>(m ,"SA")
         .def(py::init<SAConfig>())
         .def("optimize", &SA::optimize);
+
+    py::class_<LBFGS, Optimizer>(m, "LBFGS")
+        .def(py::init<LBFGSConfig>())
+        .def("optimize", &LBFGS::optimize);
 
     py::class_<Sphere, ObjectiveFunction>(m, "Sphere")
         .def(py::init<int>())
