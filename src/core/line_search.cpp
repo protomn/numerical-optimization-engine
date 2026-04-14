@@ -1,6 +1,7 @@
 #include "core/line_search.hpp"
 #include <Eigen/Dense>
 #include <cmath>
+#include <algorithm>
 
 static double cubic_interpolation(
     double a_lo, double a_hi,
@@ -17,7 +18,18 @@ static double cubic_interpolation(
     }
 
     double d2 = std::sqrt(disc);
-    double a_star = a_hi - (a_hi - a_lo) * (g_hi + d2 - d1)/(g_hi - g_lo + 2.0 * d2);
+    double denom = g_hi - g_lo + 2.0 * d2;
+
+    if(std::abs(denom) < 1e-10)
+    {
+        return (a_lo + a_hi) / 2.0;
+    }
+
+    double a_star = a_hi - (a_hi - a_lo) * (g_hi + d2 - d1) / denom;
+
+    double a_min = std::min(a_lo, a_hi);
+    double a_max = std::max(a_lo, a_hi);
+    a_star = std::max(a_min, std::min(a_max, a_star));
 
     return a_star;
 }
@@ -36,6 +48,20 @@ static double zoom(
     for(int i{}; i < max_iters; ++i)
     {
         double a_j = cubic_interpolation(a_lo, a_hi, phi_lo, phi_hi, dphi_lo, dphi_hi);
+
+        double margin{0.1 * (a_hi - a_lo)};
+        double lo = std::min(a_lo, a_hi) + margin;
+        double hi = std::max(a_lo, a_hi) - margin;
+
+        if(lo < hi) 
+        {
+            a_j = std::clamp(a_j, lo, hi);
+        }
+
+        else 
+        {
+            a_j = (a_lo + a_hi) / 2.0;
+        }
 
         double phi_j = f.evaluate(x + a_j * d);
 
