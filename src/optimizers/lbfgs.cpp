@@ -4,7 +4,6 @@
 #include <deque>
 #include <string>
 #include <vector>
-#include <iostream>
 
 static Eigen::VectorXd two_loop(
     const Eigen::VectorXd &grad,
