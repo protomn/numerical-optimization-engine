@@ -17,8 +17,9 @@ OptimResult Newton::optimize(ObjectiveFunction &f,
     for(int i{}; i < config_.max_epochs; ++i)
     {
         grad_ = f.grad(x);
+        double f_x = f.evaluate(x);
 
-        if(grad_.norm() < config_.tol)
+        if(grad_.norm() < config_.tol * std::max(1.0, std::abs(f_x)))
         {
             result.status = Status::CONVERGED;
             result.message = std::string("Converged.");
@@ -69,10 +70,11 @@ OptimResult Newton::optimize(ObjectiveFunction &f,
         }
 
         x = x - alpha * d;
+        f_x = f.evaluate(x);
 
         if(config_.history)
         {
-            result.history.push_back(f.evaluate(x));
+            result.history.push_back(f_x);
         }
 
         result.iterations = i + 1;

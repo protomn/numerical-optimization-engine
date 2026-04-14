@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <random>
 #include <cmath>
+#include <algorithm>
 #include "optimizers/hill_climbing.hpp"
 
 OptimResult HC::optimize(ObjectiveFunction &f,
@@ -42,7 +43,7 @@ OptimResult HC::optimize(ObjectiveFunction &f,
             f_prev = f_cand;
             stagnation_count = 0;
 
-            if(improvement < config_.tol)
+            if(improvement < config_.tol * std::max(1.0, std::abs(f_prev)))
             {
                 result.status = Status::CONVERGED;
                 result.message = std::string("Converged.");
@@ -64,14 +65,14 @@ OptimResult HC::optimize(ObjectiveFunction &f,
 
         if(config_.history)
         {
-            result.history.push_back(f.evaluate(x));
+            result.history.push_back(f_prev);
         }
 
         result.iterations = i + 1;
     }
 
     result.optimal_x = x;
-    result.optimal_f = f.evaluate(x);
+    result.optimal_f = f_prev;
 
 
     if(result.status == Status::MAX_EPOCHS)
