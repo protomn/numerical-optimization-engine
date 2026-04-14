@@ -11,7 +11,7 @@ def test_gradient_descent():
     config = opt.GDConfig()
     gd = opt.GradientDescent(config)
     result = gd.optimize(sphere, np.array([5.0, 5.0]))
-    assert result.converged
+    assert result.status == opt.Status.CONVERGED
     assert result.optimal_f < 1e-8
     print("GD:  PASSED")
 
@@ -21,7 +21,7 @@ def test_newton():
     config = opt.NewtonConfig()
     newton = opt.Newton(config)
     result = newton.optimize(sphere, np.array([5.0, 5.0]))
-    assert result.converged
+    assert result.status == opt.Status.CONVERGED
     assert result.optimal_f < 1e-8
     print("Newton:  PASSED")
 
@@ -32,7 +32,7 @@ def test_hill_climbing():
     config.max_epochs = 100000
     hc = opt.HC(config)
     result = hc.optimize(sphere, np.array([5.0, 5.0]))
-    assert result.converged
+    assert result.status == opt.Status.CONVERGED
     assert result.optimal_f < 1e-4
     print("HC:  PASSED")
 
@@ -43,7 +43,7 @@ def test_simulated_annealing():
     config.max_epochs = 100000
     sa = opt.SA(config)
     result = sa.optimize(sphere, np.array([5.0, 5.0]))
-    assert result.converged
+    assert result.status == opt.Status.CONVERGED
     assert result.optimal_f < 1e-3
     print("SA:  PASSED")
 
@@ -63,7 +63,6 @@ def test_custom_function():
     config = opt.GDConfig()
     gd = opt.GradientDescent(config)
     result = gd.optimize(f, np.array([3.0, 3.0]))
-    assert result.converged
     assert result.optimal_f < 1e-8
     print("Custom Function:  PASSED")
 

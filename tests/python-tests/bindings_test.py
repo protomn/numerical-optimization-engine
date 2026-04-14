@@ -11,6 +11,6 @@ gd = opt.GradientDescent(config)
 x0 = np.array([5.0, 5.0])
 result = gd.optimize(sphere, x0)
 
-print(f"Converged: {result.converged}")
+print(f"Converged: {result.status}")
 print(f"Optimal x: {result.optimal_x}")
 print(f"Optimal f: {result.optimal_f}")
