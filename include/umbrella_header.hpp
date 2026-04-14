@@ -17,3 +17,4 @@
 #include <optimizers/hill_climbing.hpp>
 #include <optimizers/newton.hpp>
 #include <optimizers/simulated_annealing.hpp>
+#include <optimizers/lbfgs.hpp>
