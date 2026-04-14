@@ -90,15 +90,15 @@ OptimResult LBFGS::optimize(ObjectiveFunction &f,
         x = x - alpha * d;
         grad_ = f.grad(x);
 
-        Eigen::VectorXd s = x - x_prev;
-        Eigen::VectorXd y = grad_ - grad_prev;
-
         if(!x.allFinite() || !grad_.allFinite())
         {
             result.status = Status::FAILED;
             result.message = std::string("Numerical breakdown.");
             break;
         }
+
+        Eigen::VectorXd s = x - x_prev;
+        Eigen::VectorXd y = grad_ - grad_prev;
 
         if(s.dot(y) > 1e-8 * s.norm() * y.norm())
         {
