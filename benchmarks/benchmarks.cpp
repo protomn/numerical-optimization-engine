@@ -45,7 +45,7 @@ int main()
     Eigen::VectorXd xr_0(2);
     xr_0 << 1.0, -1.0;
     Eigen::VectorXd x_rast(4);
-    x_rast << 2.0, 3.0, 4.0, 5.0;
+    x_rast << 2.5, 3.1, 4.7, 5.3;
 
     std::cout << "\n";
     std::cout << "Benchmark:\n";
@@ -81,6 +81,7 @@ int main()
     HCConfig hc_config;
     hc_config.max_epochs = 100000;
     hc_config.step_size = 0.1;
+    hc_config.stagnation_limit = 1000000;
     HC hc(hc_config);
     run_benchmark("Hill Climbing", "Sphere", hc, sphere, xs_0);
     run_benchmark("Hill Climbing", "Rosenbrock", hc, rosenbrock, xr_0);
@@ -92,4 +93,12 @@ int main()
     run_benchmark("Simulated Annealing", "Sphere", sa, sphere, xs_0);
     run_benchmark("Simulated Annealing", "Rosenbrock", sa, rosenbrock, xr_0);
     run_benchmark("Simulated Annealing", "Rastrigin", sa, rastrigin, x_rast);
+
+    //Benchmark for LBFGS
+    LBFGSConfig lbfgs_config;
+    lbfgs_config.max_epochs = 100000;
+    LBFGS lbfgs(lbfgs_config);
+    run_benchmark("LBFGS", "Sphere", lbfgs, sphere, xs_0);
+    run_benchmark("LBFGS", "Rosenbrock", lbfgs, rosenbrock, xr_0);
+    run_benchmark("LBFGS", "Rastrigin", lbfgs, rastrigin, x_rast);
 }

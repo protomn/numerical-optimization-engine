@@ -96,6 +96,21 @@ fn_sa_sci = lambda: da(
 
 av_time_scisa, res_scisa = benchmark("SciPy Dual Annealing", fn_sa_sci)
 
+# LBFGS
+lbfgs_config = opt.LBFGSConfig()
+lbfgs = opt.LBFGS(lbfgs_config)
+fn_lbfgs = lambda: lbfgs.optimize(sphere, x_0)
+av_time_lbfgs, res_lbfgs_ = benchmark("LBFGS", fn_lbfgs)
+
+fn_lbfgs_sci = lambda: sciop.minimize(
+    fun = lambda x: float(np.dot(x, x)),
+    x0 = x_0,
+    jac = lambda x: 2.0 * x,
+    method = "L-BFGS-B"
+)
+
+av_time_scilbfgs, res_scilbfgs = benchmark("SciPy LBFGS", fn_lbfgs_sci)
+
 print("Results:")
 print(f"{'Optimizer':<20} {'Time(ms)':<12} {'Iters':<10} {'f(x*)'}\n")
 print(f"{'Gradient Descent':<20} {av_time_gd:<12.3f} {res_gd_.iterations:<10} {res_gd_.optimal_f:.2e}\n")
@@ -106,3 +121,5 @@ print(f"{'Hill Climbing':<20} {av_time_hc:<12.3f} {res_hc_.iterations:<10} {res_
 print(f"{"SciPy Nelder-Mead":<20} {av_time_scinm:<12.3f} {res_scinm.nit:<10} {res_scinm.fun:.2e}\n")
 print(f"{'Simulated Annealing':<20} {av_time_sa:<12.3f} {res_sa_.iterations:<10} {res_sa_.optimal_f:.2e}\n")
 print(f"{"SciPy Dual Annealing":<20} {av_time_scisa:<12.3f} {res_scisa.nit:<10} {res_scisa.fun:.2e}\n")
+print(f"{'L-BFGS':<20} {av_time_lbfgs:<12.3f} {res_lbfgs_.iterations:<10} {res_lbfgs_.optimal_f:.2e}\n")
+print(f"{"SciPy L-BFGS":<20} {av_time_scilbfgs:<12.3f} {res_scilbfgs.nit:<10} {res_scilbfgs.fun:.2e}\n")
