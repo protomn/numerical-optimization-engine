@@ -61,7 +61,8 @@ OptimResult SA::optimize(ObjectiveFunction &f,
 
         else
         {
-            p = std::exp(-delta_f / T);
+            double exp = -delta_f / T;
+            p = (exp < -500.0) ? 0.0 : std::exp(exp);
 
             if(dist_2(gen) < p)
             {
