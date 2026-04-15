@@ -6,6 +6,17 @@
 
 class FiniteDiffWrapper : public ObjectiveFunction
 {
+    /*
+    wraps any ObjectiveFunction to numerically approximate derivatives (grad and hess)
+    useful when analytical grad()/hessian() is computationally expensive
+    
+    grad() uses central difference, 2n evaluations per call
+    hessian() diag uses second difference, 2n + 1 evals per call
+    hessian() off diag uses 4-pt mixed formula, 4 evals per pair
+
+    f_ is held by reference, caller must ensure wrapped object outlives the wrapper object.
+    */
+
     public:
 
         explicit FiniteDiffWrapper(ObjectiveFunction &f, double h = 1e-5) : f_(f), h_(h) {}
@@ -17,6 +28,10 @@ class FiniteDiffWrapper : public ObjectiveFunction
 
         Eigen::VectorXd grad(const Eigen::VectorXd &x) const override
         {
+            /*
+            approximates 1st derivative via central differences.
+            */
+
             size_t dim = x.size();
 
             Eigen::VectorXd grad_(dim);
@@ -40,6 +55,13 @@ class FiniteDiffWrapper : public ObjectiveFunction
 
         Eigen::MatrixXd hessian(const Eigen::VectorXd &x) const override
         {
+            /*
+            approximates second deriv via finite difference
+            computationally very expensive
+            symmetry hardcoded
+            only called by newton's descent.
+            */
+
             size_t dim = x.size();
             Eigen::MatrixXd hess(dim, dim);
 
@@ -104,5 +126,5 @@ class FiniteDiffWrapper : public ObjectiveFunction
     private:
 
         ObjectiveFunction &f_;
-        double h_;
+        double h_; // finite difference step size
 };
