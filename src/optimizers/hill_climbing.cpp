@@ -14,6 +14,10 @@ OptimResult HC::optimize(ObjectiveFunction &f,
     result.iterations = 0;
     Eigen::VectorXd x{x_0};
 
+    /*
+    non-deterministic seed, each run gives a different trajectory
+    needed for stochastic optimization
+    */
     std::random_device rd;
     std::mt19937 gen(rd());
     std::normal_distribution<double> dist(0.0, config_.step_size);
@@ -25,6 +29,10 @@ OptimResult HC::optimize(ObjectiveFunction &f,
     {
         Eigen::VectorXd pertubation_vect(x.size());
 
+        /*
+        component wise pertubation
+        gaussian noise gives uniform exploration in all directions
+        */
         for(int j{}; j < x.size(); j++)
         {
             pertubation_vect[j] = dist(gen);
@@ -36,6 +44,10 @@ OptimResult HC::optimize(ObjectiveFunction &f,
 
         auto f_cand = f.evaluate(cand);
 
+        /*
+        pure greedy acceptance, stop once accepted steps are too small
+        scaled by |f(improvement)| to handle functions with values too large/too small
+        */
         if(f_cand < f_prev)
         {
             double improvement = std::abs(f_prev - f_cand);
@@ -43,6 +55,9 @@ OptimResult HC::optimize(ObjectiveFunction &f,
             f_prev = f_cand;
             stagnation_count = 0;
 
+            /*
+            relative improvement check, stop when steps are too small
+            */
             if(improvement < config_.tol * std::max(1.0, std::abs(f_prev)))
             {
                 result.status = Status::CONVERGED;
@@ -53,7 +68,7 @@ OptimResult HC::optimize(ObjectiveFunction &f,
 
         else
         {
-            stagnation_count++;
+            stagnation_count++; //candidate rejected, consecutive failure count increased
 
             if(stagnation_count >= config_.stagnation_limit)
             {

@@ -13,13 +13,18 @@ OptimResult SA::optimize(ObjectiveFunction &f,
     Eigen::VectorXd x{x_0};
     double T = config_.initial_temp;
 
+    /*
+    non-deterministic seed, each run gives a different markov chain
+    needed for stochastic global optimization
+    */
     std::random_device rd;
     std::mt19937 gen(rd());
     std::normal_distribution<double> dist_1(0.0, config_.step_size);
     std::uniform_real_distribution<double> dist_2(0.0, 1.0);
 
-    double f_x = f.evaluate(x);
-    Eigen::VectorXd best_x = x;
+    double f_x = f.evaluate(x); // track best solution seen across the entire run
+                                // chain may accept worse solutions
+    Eigen::VectorXd best_x{x};
     double best_f{f_x};
 
     for(int i{}; i < config_.max_epochs; ++i)
@@ -28,12 +33,17 @@ OptimResult SA::optimize(ObjectiveFunction &f,
 
         if(T < config_.min_temp)
         {
+            /*
+            primary stopping criterion, temp cooled below min_temp
+            acceptance probability for any worsening move is virtually 0
+            search converges to local exploitation
+            */
             result.status = Status::CONVERGED;
             result.message = std::string("Converged.");
             break;
         }
 
-        Eigen::VectorXd pertubation_vect(x.size());
+        Eigen::VectorXd pertubation_vect(x.size()); // sample candidate vector
 
         for(int j{}; j < x.size(); ++j)
         {
@@ -44,6 +54,12 @@ OptimResult SA::optimize(ObjectiveFunction &f,
 
         auto f_cand = f.evaluate(cand);
         auto delta_f = f_cand - f_x;
+        /*
+        delta_f < 0: improvement, accept
+        delta_f >= 0: worsening, accept based on probability
+        high temp -> all moves accepted (exploration)
+        low temp -> worsening moves are rejected (exploitation)
+        */
 
         double p{};
 
@@ -61,7 +77,9 @@ OptimResult SA::optimize(ObjectiveFunction &f,
 
         else
         {
-            double exp = -delta_f / T;
+            double exp = -delta_f / T; // to clamp exp value to avoid overflow
+                                       // double overflows for x > ~600
+                                       // guard against very large magnitudes when temp approches min_temp
             p = (exp < -500.0) ? 0.0 : std::exp(exp);
 
             if(dist_2(gen) < p)
@@ -77,7 +95,7 @@ OptimResult SA::optimize(ObjectiveFunction &f,
             }
         }
 
-        T = T * config_.cooling_rate;
+        T = T * config_.cooling_rate; // cooling update rule
 
         if(config_.history)
         {
@@ -87,6 +105,7 @@ OptimResult SA::optimize(ObjectiveFunction &f,
         result.iterations += 1;
     }
 
+    // return best seen, not last position in the chain
     result.optimal_x = best_x;
     result.optimal_f = best_f;
 

@@ -19,6 +19,10 @@ OptimResult Newton::optimize(ObjectiveFunction &f,
         grad_ = f.grad(x);
         double f_x = f.evaluate(x);
 
+        /*
+        relative grad norm convergence, same as GD and L-BFGS for same
+        behaviour across optimizers
+        */
         if(grad_.norm() < config_.tol * std::max(1.0, std::abs(f_x)))
         {
             result.status = Status::CONVERGED;
@@ -26,14 +30,29 @@ OptimResult Newton::optimize(ObjectiveFunction &f,
             break;
         }
 
+        /*
+        modified cholesky regularization
+        if raw hessian is indef far from the optimum, add mu * I
+        and double the value of mu until cholesky factorization succeeds,
+        guaranteeing hessian matrix is PD.
+        */
+
         double mu{config_.initial_mu};
         Eigen::MatrixXd hess_mod;
         Eigen::LLT<Eigen::MatrixXd> llt;
         hess = f.hessian(x);
         bool proceed{true};
 
+        /*
+        each iter doubles mu until LLT succeeds or shift is too large for
+        the problem to be numerically stable.
+        */
         while(proceed)
         {
+            /*
+            as mu grows, hess_mod grows and approaches mu * I and 
+            d approaches the direction of steepest descent, safe fallback
+            */
             hess_mod = hess + mu * Eigen::MatrixXd::Identity(hess.rows(), hess.cols());
             llt = hess_mod.llt();
 
@@ -55,21 +74,30 @@ OptimResult Newton::optimize(ObjectiveFunction &f,
         if(!proceed)
         {
             break;
-        }
+        }   
 
+        /*
+        solve for newton dirn d
+        uses cholesky factor, no extra computation
+        */
         Eigen::VectorXd d = llt.solve(grad_);
 
         double alpha{1.0};
 
         if(config_.backtracking)
         {
+            /*
+            damped newton step, full step can overshoot far from optimum
+            wolfe line search scales the step size back whenever required.
+            */
+
             WolfeConfig wc;
             wc.c1 = config_.c1;
             wc.c2 = config_.c2;
             alpha = lineSearch(f, x, -d, grad_, wc);
         }
 
-        x = x - alpha * d;
+        x = x - alpha * d; // update rule
         f_x = f.evaluate(x);
 
         if(config_.history)

@@ -1,7 +1,6 @@
 #include <stdexcept>
 #include <string>
 #include <Eigen/Dense>
-#include <iostream>
 #include <vector>
 #include "optimizers/gradient_descent.hpp"
 #include "core/line_search.hpp"
@@ -20,6 +19,10 @@ OptimResult GradientDescent::optimize(ObjectiveFunction &f,
         grad_ = f.grad(x);
         double f_x = f.evaluate(x);
 
+        /*
+        relative gradient norm: scale tol by |f(x)| so convergence
+        behaves consistently across functions w different magnitudes.
+        */
         if(grad_.norm() < config_.tol * std::max(1.0, std::abs(f_x)))
         {
             result.status = Status::CONVERGED;
@@ -29,6 +32,13 @@ OptimResult GradientDescent::optimize(ObjectiveFunction &f,
 
         double alpha{1.0};
 
+        /*
+        wolfe line search to find a step size satisfying sufficient decrease and curvature
+        conditions, prevents divergence on ill-conditions surfaces
+
+        fixed learning rate fall back for debugging, initial implementation, iterated 3 times
+        fixed step -> armijo -> wolfe
+        */
         if(config_.backtracking)
         {
             WolfeConfig wc;
@@ -42,6 +52,8 @@ OptimResult GradientDescent::optimize(ObjectiveFunction &f,
             alpha = config_.learning_rate;
         }
         
+        // steppest descent step, step size either from line_search or config, depending on
+        // backtracking conditional
         x = x - alpha * grad_;
 
         if(config_.history)
