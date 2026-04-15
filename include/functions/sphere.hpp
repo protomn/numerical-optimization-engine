@@ -5,10 +5,23 @@
 
 class Sphere : public ObjectiveFunction
 {
+    /*
+    n-dim sphere function, convex, smooth
+    grad(x) = 2x
+    hess(x) = 2I
+
+    global min @ 0
+    optimizers should converge in least epochs
+    */
+
     public: 
 
         explicit Sphere(int dims) : n_(dims)
         {
+            /*
+            dims: dimensionality of input space
+            */
+
             if(dims <= 0)
             {
                 throw std::invalid_argument("Dimensions must be positive.");

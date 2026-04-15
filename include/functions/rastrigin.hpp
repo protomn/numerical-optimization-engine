@@ -7,6 +7,13 @@
 
 class Rastrigin : public ObjectiveFunction
 {
+    /*
+    n-dim rastrigin function
+    A = 10 (standard value)
+
+    hessian is a diagonal matrix, off diagonal entries are 0
+    rastrigin is separable across dimensions
+    */
     public:
 
         explicit Rastrigin(int dims) : n_(dims)
@@ -22,6 +29,7 @@ class Rastrigin : public ObjectiveFunction
             if(n_ != x.size())
             {
                 throw std::invalid_argument("Dimension mismatch!");
+                // Dimension check to guard against mismatched start point @ runtime
             }
 
             double res{};
@@ -79,5 +87,5 @@ class Rastrigin : public ObjectiveFunction
     private:
 
         int n_;
-        static constexpr double A_ = 10.0;
+        static constexpr double A_ = 10.0; // amplitude of cos term
 };

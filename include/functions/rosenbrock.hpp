@@ -5,6 +5,14 @@
 
 class Rosenbrock : public ObjectiveFunction
 {
+    /*
+    2d rosenbrock functions, non-convex
+    f(x, y) = (a - x)^2 + b(y - x^2)^2, where a = 1, b = 100
+    global minimum @ (0, 0)
+
+    handled well by newton and l-bfgs, gd struggles
+    */
+
     public:
 
         explicit Rosenbrock(int dims) : n_(dims)
@@ -17,14 +25,14 @@ class Rosenbrock : public ObjectiveFunction
 
         double evaluate(const Eigen::VectorXd &x) const override
         {
-            double t{x(1) - x(0) * x(0)};
+            double t{x(1) - x(0) * x(0)}; // cached to avoid recomputation 
             return (1 - x(0)) * (1 - x(0)) + 100 * t * t;
         }
 
         Eigen::VectorXd grad(const Eigen::VectorXd &x) const override
         {
             Eigen::VectorXd g(2);
-            double t{x(1) - x(0) * x(0)};
+            double t{x(1) - x(0) * x(0)}; // cached
             g(0) = -2 * (1-x(0)) - 400 * x(0) * t;
             g(1) = 200 * t;
 
