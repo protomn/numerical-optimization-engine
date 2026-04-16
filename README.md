@@ -37,15 +37,15 @@ Standard steepest descent: `x_{n+1} = x_n - alpha_n * grad f(x_n)`. Step size is
 
 **Newton's Method** (`src/optimizers/newton.cpp`)
 
-Computes `d_n = (H + mu*I)^{-1} * grad f(x_n)` where `H = hessian f(x_n)`. The diagonal shift `mu` is initialized at `initial_mu` and doubled until the Cholesky factorization of `H + mu*I` succeeds, guaranteeing a positive definite system and a valid descent direction regardless of Hessian conditioning. The Newton step is then scaled by Wolfe line search.
+Computes `d_n = (H + mu*I)^{-1} * grad f(x_n)` where `H = hessian f(x_n)`. The diagonal shift `mu` is initialized at `initial_mu` and doubled until the Cholesky factorization of `H + mu*I` succeeds. The step is scaled via Wolfe line search.
 
 **L-BFGS** (`src/optimizers/lbfgs.cpp`)
 
-Limited-memory quasi-Newton method. The inverse Hessian approximation `H_n` is built implicitly from the `m` most recent displacement pairs `(s_n, y_n)` and applied via the two-loop recursion (Nocedal 1980). Curvature pairs with `s^T y <= 1e-8 * ||s|| * ||y||` are skipped to prevent near-singular updates. The line search uses `c2 = 0.1` (tighter than the GD default of `0.9`) to guarantee `y^T s > 0`, which is required for the BFGS update to remain positive definite. Convergence is checked on relative gradient norm: `||grad f|| < tol * max(1, |f(x)|)`.
+Limited-memory quasi-Newton method. The inverse Hessian approximation `H_n` is built implicitly from the `m` most recent displacement pairs `(s_n, y_n)` and applied via the two-loop recursion (Nocedal 1980). Curvature pairs with `s^T y <= 1e-8 * ||s|| * ||y||` are skipped. The line search uses `c2 = 0.1`. Convergence criterion: `||grad f|| < tol * max(1, |f(x)|)`.
 
 **Hill Climbing** (`src/optimizers/hill_climbing.cpp`)
 
-Derivative-free stochastic local search. At each step, a candidate `x' = x + eps` is drawn where `eps ~ N(0, step_size^2 * I)`. The candidate is accepted only if `f(x') < f(x)`. Two stopping criteria run in parallel: improvement below `tol` (CONVERGED), or no accepted step for `stagnation_limit` consecutive iterations (STAGNATED).
+Derivative-free stochastic local search. At each step, a candidate `x' = x + eps` is drawn as `eps ~ N(0, step_size^2 * I)`. The candidate is accepted only if `f(x') < f(x)`. Two stopping criteria run in parallel: improvement below `tol` (CONVERGED), or no accepted step for `stagnation_limit` consecutive iterations (STAGNATED).
 
 **Simulated Annealing** (`src/optimizers/simulated_annealing.cpp`)
 
@@ -59,7 +59,7 @@ Implements the More-Thuente bracket-and-zoom algorithm (Nocedal & Wright). The b
 
 **Finite Difference Wrapper** (`include/core/finite_difference.hpp`)
 
-Wraps any `ObjectiveFunction` to provide numerically approximated derivatives when analytic forms are unavailable. Uses central differences for the gradient (O(h^2), 2n evaluations) and second/mixed differences for the Hessian (O(h^2), O(n^2) evaluations). Default step size `h = 1e-5` balances truncation error against floating-point cancellation for double precision. Symmetry of the Hessian is enforced explicitly.
+Wraps any `ObjectiveFunction` to provide numerically approximated derivatives when analytic forms are unavailable. Uses central differences for the gradient and second/mixed differences for the Hessian, both O(h^2) accurate, with default `h = 1e-5`. Hessian symmetry is enforced explicitly.
 
 ### Numerical Safeguards
 
@@ -277,11 +277,37 @@ vendor/
 
 ---
 
+## Design Tradeoffs
+
+**Header-only functions vs. compiled optimizers**: Test functions (Sphere, Rosenbrock, Rastrigin) are header-only since they contain no state and are used across tests, benchmarks, and Python bindings. Optimizers are split into header/source to keep compile times reasonable as the optimizer count grows.
+
+**`FiniteDiffWrapper` holds a raw reference**: The wrapper takes non-const `ObjectiveFunction &f` rather than owning a copy or shared pointer. This avoids imposing a heap allocation on callers and keeps the interface consistent with how optimizers receive objectives. The lifetime requirement is documented and enforced at the Python boundary via `py::keep_alive`.
+
+**Wolfe `c2 = 0.1` for L-BFGS vs. `c2 = 0.9` for GD/Newton**: The tighter curvature condition for L-BFGS is not a tuning choice, it is a correctness requirement. The BFGS update requires `y^T s > 0`, which the strong Wolfe condition with `c2 < 1` guarantees. Using `c2 = 0.9` in L-BFGS would allow curvature pairs with near-zero `y^T s` into the history, corrupting the inverse-Hessian approximation.
+
+**Relative convergence criterion**: All gradient-based optimizers use `||grad f|| < tol * max(1, |f(x)|)` rather than the absolute `||grad f|| < tol`. The absolute form fails silently on functions with large objective values where the gradient is proportionally large at the optimum.
+
+**No PRNG seeding in HC/SA**: Both stochastic optimizers seed from `std::random_device` rather than a fixed seed. Reproducibility is left to the caller; a fixed seed would require exposing it in the config and complicates the default-construct-and-run usage pattern.
+
+---
+
+## Constraints
+
+The engine currently supports unconstrained optimization only. The following are not implemented:
+
+- **Box constraints** (`x_min <= x <= x_max`): required for L-BFGS-B style bounded optimization.
+- **Equality constraints** (`g(x) = 0`): no augmented Lagrangian or penalty method.
+- **Inequality constraints** (`h(x) <= 0`): no interior point or active set method.
+
+For constrained problems, a penalty or barrier can be added manually to the objective function before passing it to any optimizer. This is not a substitute for a proper constrained solver but works for simple cases.
+
+---
+
 ## Notes on Numerical Stability
 
 **Line search**: The More-Thuente zoom phase maintains the standard bracket invariants. Cubic interpolation results are clamped to the inner 80% of the bracket to prevent degenerate near-boundary trial steps. A denominator near-zero check and discriminant less than zero falls back to bisection.
 
-**L-BFGS curvature pairs**: The relative threshold `s^T y > 1e-8 * ||s|| * ||y||` is scale-invariant. An absolute threshold (`s^T y > 0`) accepts near-orthogonal pairs that produce large `rho = 1/(s^T y)` values, amplifying numerical error in subsequent two-loop iterations.
+**L-BFGS curvature pairs**: Pairs are accepted only when `s^T y > 1e-8 * ||s|| * ||y||` (relative threshold, scale-invariant).
 
 **Newton regularization**: The modified Cholesky approach doubles `mu` on each failed Cholesky factorization. At `mu >= 1e10` the step is abandoned and `Status::FAILED` is returned, rather than silently producing a non-descent direction.
 
