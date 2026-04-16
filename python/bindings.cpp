@@ -8,8 +8,9 @@
 namespace py = pybind11;
 
 /*
-Creating a trampoline class to be able to expose and override
-virtual and pure virtual methods.
+trampoline class required by pybind11 to support python subclassing of abstract cpp classes
+without this python class inheriting from cpp base classes would not be able to override
+their pure virtual methods
 */
 
 class PyObjectiveFunction : public ObjectiveFunction
@@ -74,6 +75,14 @@ class PyOptimizer : public Optimizer
         }
 };
 
+/*
+module entry point
+exposes the entire optimization engine to python as optim_engine
+registration order:
+- bases classes
+- everything else (enums, structs, derived classes)
+*/
+
 PYBIND11_MODULE(optim_engine, m)
 {
     m.doc() = std::string("Numerical Optimization Engine");
@@ -88,14 +97,15 @@ PYBIND11_MODULE(optim_engine, m)
         .def("dim", &ObjectiveFunction::dim);
 
     py::class_<FiniteDiffWrapper, ObjectiveFunction>(m, "FiniteDiffWrapper")
+    /*
+    py::keep_alive<1, 2>() keeps the wrapped ObjectiveFunction alive for at least as
+    long as the FiniteDiffWrapper object is alive.
+    this is to prevent python's gc from destroying the inner function while the 
+    wrapper still holds a raw reference to it -> can lead to seg fault.
+    */
         .def(py::init<ObjectiveFunction &, double>(),
              py::arg("f"), py::arg("h") = 1e-5,
              py::keep_alive<1, 2>())
-             /*
-             Wrapper holds a raw reference
-             If python garbage collects f while fdw object is still alive
-             can cause seg fault.
-             */
         .def("evaluate", &FiniteDiffWrapper::evaluate)
         .def("grad", &FiniteDiffWrapper::grad)
         .def("hessian", &FiniteDiffWrapper::hessian)
@@ -126,6 +136,9 @@ PYBIND11_MODULE(optim_engine, m)
         .def(py::init<>())
         .def("optimize", &Optimizer::optimize);
 
+    /*
+    config structs exposed with readwrite access so parameters can be tuned via python
+    */
 
     py::class_<GDConfig>(m, "GDConfig")
         .def(py::init<>())
@@ -180,6 +193,13 @@ PYBIND11_MODULE(optim_engine, m)
         .def_readwrite("c2", &WolfeConfig::c2)
         .def_readwrite("alpha_max", &WolfeConfig::alpha_max)
         .def_readwrite("max_epochs", &WolfeConfig::max_epochs);
+
+    // Optimizer bindings
+
+    /*
+    exposed optimizers, each takes a config struct as an argument at construction
+    and exposes a single optimizer method that matches the core code interface.
+    */
 
     py::class_<GradientDescent, Optimizer>(m, "GradientDescent")
         .def(py::init<GDConfig>())
