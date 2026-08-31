@@ -14,11 +14,14 @@ OptimResult SA::optimize(ObjectiveFunction &f,
     double T = config_.initial_temp;
 
     /*
-    non-deterministic seed, each run gives a different markov chain
-    needed for stochastic global optimization
+    config_.seed < 0 draws a non-deterministic seed, so each run gives a
+    different markov chain, as needed for stochastic global optimization.
+
+    a non-negative seed makes the chain reproducible.
     */
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    std::mt19937 gen(config_.seed < 0
+                         ? std::random_device{}()
+                         : static_cast<std::mt19937::result_type>(config_.seed));
     std::normal_distribution<double> dist_1(0.0, config_.step_size);
     std::uniform_real_distribution<double> dist_2(0.0, 1.0);
 

@@ -166,7 +166,8 @@ PYBIND11_MODULE(optim_engine, m)
         .def_readwrite("step_size", &HCConfig::step_size)
         .def_readwrite("tol", &HCConfig::tol)
         .def_readwrite("stagnation_limit", &HCConfig::stagnation_limit)
-        .def_readwrite("history", &HCConfig::history);
+        .def_readwrite("history", &HCConfig::history)
+        .def_readwrite("seed", &HCConfig::seed);
 
     py::class_<SAConfig>(m, "SAConfig")
         .def(py::init<>())
@@ -176,7 +177,8 @@ PYBIND11_MODULE(optim_engine, m)
         .def_readwrite("step_size", &SAConfig::step_size)
         .def_readwrite("max_epochs", &SAConfig::max_epochs)
         .def_readwrite("tol", &SAConfig::tol)
-        .def_readwrite("history", &SAConfig::history);
+        .def_readwrite("history", &SAConfig::history)
+        .def_readwrite("seed", &SAConfig::seed);
 
     py::class_<LBFGSConfig>(m, "LBFGSConfig")
         .def(py::init<>())

@@ -30,6 +30,10 @@ def test_hill_climbing():
     sphere = opt.Sphere(2)
     config = opt.HCConfig()
     config.max_epochs = 100000
+    # Hill climbing is stochastic. Without a fixed seed the reported status
+    # varies between CONVERGED and STAGNATED across identical runs, so this
+    # assertion failed roughly a quarter of the time.
+    config.seed = 42
     hc = opt.HC(config)
     result = hc.optimize(sphere, np.array([5.0, 5.0]))
     assert result.status == opt.Status.CONVERGED
@@ -41,6 +45,8 @@ def test_simulated_annealing():
     sphere = opt.Sphere(2)
     config = opt.SAConfig()
     config.max_epochs = 100000
+    # Seeded for the same reason as hill climbing above.
+    config.seed = 42
     sa = opt.SA(config)
     result = sa.optimize(sphere, np.array([5.0, 5.0]))
     assert result.status == opt.Status.CONVERGED

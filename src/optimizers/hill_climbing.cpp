@@ -15,11 +15,15 @@ OptimResult HC::optimize(ObjectiveFunction &f,
     Eigen::VectorXd x{x_0};
 
     /*
-    non-deterministic seed, each run gives a different trajectory
-    needed for stochastic optimization
+    config_.seed < 0 draws a non-deterministic seed, so each run gives a
+    different trajectory, as needed for stochastic optimization.
+
+    a non-negative seed makes the trajectory reproducible, which is what
+    lets the test suite assert on the outcome without flaking.
     */
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    std::mt19937 gen(config_.seed < 0
+                         ? std::random_device{}()
+                         : static_cast<std::mt19937::result_type>(config_.seed));
     std::normal_distribution<double> dist(0.0, config_.step_size);
 
     double f_prev{f.evaluate(x)};

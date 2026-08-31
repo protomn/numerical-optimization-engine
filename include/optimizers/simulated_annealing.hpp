@@ -21,6 +21,10 @@ struct SAConfig
     int max_epochs{10000}; // max number of iterations the optimizer runs
     [[maybe_unused]] double tol{1e-6}; // unused for SA, task taken up by min_temp
     bool history{false}; // records f(x) at every epoch
+    int seed{-1}; // RNG seed for the gaussian pertubation. negative (default)
+                  // draws a non-deterministic seed from std::random_device,
+                  // preserving the original behaviour. set >= 0 for a
+                  // reproducible trajectory, which tests rely on.
 };
 
 class SA : public Optimizer

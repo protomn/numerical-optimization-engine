@@ -20,6 +20,10 @@ struct HCConfig
     double tol{1e-6}; // convergence threshold
     int stagnation_limit{100}; // number of consec rejected step before OptimResult::status == Status::STAGNATED
     bool history{false}; // records f(x) at every epoch and stores in a vector
+    int seed{-1}; // RNG seed for the gaussian pertubation. negative (default)
+                  // draws a non-deterministic seed from std::random_device,
+                  // preserving the original behaviour. set >= 0 for a
+                  // reproducible trajectory, which tests rely on.
 };
 
 class HC : public Optimizer
